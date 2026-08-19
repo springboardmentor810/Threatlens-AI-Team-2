@@ -6,6 +6,7 @@ from app.database.postgres import engine
 from app import models
 from app.api.auth import router as auth_router
 from app.api.upload import router as upload_router
+from app.api.admin import router as admin_router
 
 
 # Create database tables
@@ -27,6 +28,9 @@ app.include_router(
 
 # File upload routes
 app.include_router(upload_router)
+
+# Administration routes
+app.include_router(admin_router)
 
 
 @app.get("/")

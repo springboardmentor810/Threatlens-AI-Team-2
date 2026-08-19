@@ -4,7 +4,8 @@ from sqlalchemy.orm import Session
 from app.services.upload_service import UploadService
 from app.schemas.upload import UploadResponse
 from app.database.session import get_db
-from app.middleware.auth_middleware import get_current_user
+from app.middleware.auth_middleware import require_roles
+from app.core.roles import UserRole
 from app.models.user import User
 
 router = APIRouter(
@@ -19,7 +20,13 @@ service = UploadService()
 def upload_file(
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(get_current_user)
+    current_user: User = Depends(
+    require_roles(
+        UserRole.ANALYST,
+        UserRole.SECURITY_ANALYST,
+        UserRole.ADMIN
+    )
+  )
 ):
     return service.upload_file(
         file=file,

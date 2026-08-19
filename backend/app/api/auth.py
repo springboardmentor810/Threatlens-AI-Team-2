@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 
@@ -58,6 +58,12 @@ def login(
             headers={"WWW-Authenticate": "Bearer"},
         )
 
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Your account is currently inactive. Please contact an administrator."
+        )
+
     access_token = create_access_token(
         data={"sub": user.email, "role": user.role}
     )
@@ -67,7 +73,6 @@ def login(
         token_type="bearer",
         expires_in=settings.ACCESS_TOKEN_EXPIRE_MINUTES * 60
     )
-
 @router.get(
     "/profile",
     response_model=UserResponse,
