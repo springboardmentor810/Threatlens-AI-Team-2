@@ -7,6 +7,7 @@ from app import models
 from app.api.auth import router as auth_router
 from app.api.upload import router as upload_router
 from app.api.admin import router as admin_router
+from app.api.analysis import router as analysis_router
 
 
 # Create database tables
@@ -31,6 +32,9 @@ app.include_router(upload_router)
 
 # Administration routes
 app.include_router(admin_router)
+
+# Cybersecurity analysis routes
+app.include_router(analysis_router)
 
 
 @app.get("/")
