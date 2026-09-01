@@ -7,7 +7,7 @@ from app.models.alert import Alert
 
 class AlertService:
     """
-    Creates cybersecurity alerts from final analysis findings.
+    Creates cybersecurity alerts from the final cybersecurity finding.
     """
 
     def create_alert(
@@ -21,6 +21,10 @@ class AlertService:
 
         Clean files do not generate alerts.
         """
+
+        # ==========================================================
+        # EXTRACT FINAL FINDING
+        # ==========================================================
 
         verdict = final_finding.get(
             "verdict",
@@ -42,23 +46,33 @@ class AlertService:
             []
         )
 
-        # --------------------------------
-        # Do not create alerts for clean files
-        # --------------------------------
+        # ==========================================================
+        # CLEAN FILE
+        # ==========================================================
 
         if verdict == "CLEAN":
             return None
 
-        # --------------------------------
-        # Build alert message
-        # --------------------------------
+        # ==========================================================
+        # BUILD REASON TEXT
+        # ==========================================================
 
         if reasons:
-            reason_text = "; ".join(reasons)
+
+            reason_text = "; ".join(
+                str(reason)
+                for reason in reasons
+            )
+
         else:
+
             reason_text = (
                 "Cybersecurity threat detected."
             )
+
+        # ==========================================================
+        # BUILD ALERT MESSAGE
+        # ==========================================================
 
         message = (
             f"{verdict} threat detected. "
@@ -66,12 +80,12 @@ class AlertService:
             f"{reason_text}"
         )
 
-        # Keep message within database column limit
+        # Database column safety.
         message = message[:500]
 
-        # --------------------------------
-        # Create alert
-        # --------------------------------
+        # ==========================================================
+        # CREATE ALERT
+        # ==========================================================
 
         alert = Alert(
             file_id=file_id,
@@ -80,7 +94,9 @@ class AlertService:
         )
 
         db.add(alert)
+
         db.commit()
+
         db.refresh(alert)
 
         return alert
