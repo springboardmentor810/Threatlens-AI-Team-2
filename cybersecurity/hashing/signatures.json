@@ -1,0 +1,10 @@
+{
+    "sha256": {
+        "44d88612fea8a8f36de82e1278abb02f5e9f7c6b7b4e8f5c6d8e7f6a5b4c3d2e1": {
+            "name": "Test_Malware_Sample",
+            "family": "TestFamily",
+            "severity": "high"
+        }
+    },
+    "md5": {}
+}

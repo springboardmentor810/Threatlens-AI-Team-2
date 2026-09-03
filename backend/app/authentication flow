@@ -1,0 +1,28 @@
+User
+   │
+   ▼
+Register
+   │
+   ▼
+Password hashed using bcrypt
+   │
+   ▼
+Stored in Database
+   │
+   ▼
+Login
+   │
+   ▼
+Password Verification
+   │
+   ▼
+JWT Token Generated
+   │
+   ▼
+Swagger Authorize
+   │
+   ▼
+Protected APIs
+   │
+   ▼
+Get Profile / Update Profile
