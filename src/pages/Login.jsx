@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
   ShieldCheck,
   Lock,
@@ -14,13 +14,10 @@ import {
   BrainCircuit,
   BarChart3,
   Zap,
-  UserCog,
-  Users,
-  FlaskConical,
-  Shield as ShieldIcon,
+  AlertCircle,
+  CheckCircle2,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import { ROLES } from "../data/mockData";
 
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
@@ -37,13 +34,6 @@ function getPasswordError(value) {
   if (!/[a-zA-Z]/.test(value)) return "Password must include at least one letter.";
   return "";
 }
-
-const ROLE_META = {
-  analyst: { icon: UserCog },
-  soc: { icon: Users },
-  admin: { icon: ShieldIcon },
-  researcher: { icon: FlaskConical },
-};
 
 function Hex({ icon: Icon, className = "", size = "h-14 w-14", iconSize = "h-5 w-5" }) {
   return (
@@ -80,12 +70,14 @@ function DotMap() {
 }
 
 export default function Login() {
-  const [email, setEmail] = useState("");
+  const location = useLocation();
+  const [email, setEmail] = useState(location.state?.registeredEmail ?? "");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [roleId, setRoleId] = useState("analyst");
   const [scanning, setScanning] = useState(false);
   const [touched, setTouched] = useState({ email: false, password: false });
+  const [authError, setAuthError] = useState("");
+  const [justRegistered, setJustRegistered] = useState(!!location.state?.justRegistered);
   const { login } = useAuth();
   const navigate = useNavigate();
 
@@ -100,10 +92,16 @@ export default function Login() {
   function handleSubmit(e) {
     e.preventDefault();
     setTouched({ email: true, password: true });
+    setAuthError("");
     if (!isValid) return;
     setScanning(true);
     setTimeout(() => {
-      login({ email, roleId });
+      const result = login({ email, password });
+      if (!result.success) {
+        setAuthError(result.error);
+        setScanning(false);
+        return;
+      }
       navigate("/app");
     }, 650);
   }
@@ -157,9 +155,7 @@ export default function Login() {
                   Every file tells you<br />what it's <span className="text-orange-500">hiding.</span>
                 </h1>
                 <p className="mt-4 text-sm leading-relaxed text-ink-soft">
-                  Static analysis, behavioral prediction, and classification models
-                  surface the risk in a file before it ever runs — hashing, PE header
-                  inspection, YARA matching, and confidence-scored verdicts, in one console.
+                  
                 </p>
               </div>
 
@@ -217,14 +213,30 @@ export default function Login() {
         <div className="flex items-center justify-center bg-surface/60 px-6 py-12 lg:bg-transparent">
           <div className="w-full max-w-sm rounded-3xl border border-line bg-white p-8 shadow-[0_20px_60px_-15px_rgba(255,94,26,0.18)]">
             <p className="font-mono text-[11px] font-semibold uppercase tracking-widest text-orange-500">
-              Console access
+              
             </p>
             <h2 className="mt-1.5 font-display text-2xl font-semibold text-ink">Sign in to your workspace</h2>
-            <p className="mt-2 text-sm text-ink-soft">
-              Use any email and password — this is a demo build wired to mock data.
-            </p>
+          
 
-            <form onSubmit={handleSubmit} className="mt-7 space-y-5">
+            {justRegistered && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-orange-200 bg-orange-50 px-3.5 py-3">
+                <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-orange-500" />
+                <p className="text-xs text-orange-700">Account created. Sign in with your new email and password below.</p>
+              </div>
+            )}
+            {authError && (
+              <div className="mt-4 flex items-start gap-2 rounded-xl border border-orange-300 bg-orange-50 px-3.5 py-3">
+                <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-orange-600" />
+                <p className="text-xs text-orange-700">
+                  {authError}{" "}
+                  {authError.includes("No account") && (
+                    <Link to="/register" className="font-semibold underline">Register now</Link>
+                  )}
+                </p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="mt-6 space-y-5">
               <div>
                 <label className="mb-1.5 block text-xs font-medium text-ink-soft">Work email</label>
                 <div className="relative">
@@ -233,7 +245,7 @@ export default function Login() {
                     type="email"
                     required
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => { setEmail(e.target.value); setJustRegistered(false); setAuthError(""); }}
                     onBlur={() => setTouched((t) => ({ ...t, email: true }))}
                     placeholder="you@organization.com"
                     aria-invalid={touched.email && !!emailError}
@@ -256,7 +268,7 @@ export default function Login() {
                     required
                     minLength={6}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => { setPassword(e.target.value); setAuthError(""); }}
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                     placeholder="At least 6 characters"
                     aria-invalid={touched.password && !!passwordError}
@@ -282,31 +294,6 @@ export default function Login() {
                 )}
               </div>
 
-              <div>
-                <label className="mb-1.5 block text-xs font-medium text-ink-soft">Sign in as</label>
-                <div className="grid grid-cols-2 gap-2">
-                  {ROLES.map((role) => {
-                    const RoleIcon = ROLE_META[role.id]?.icon ?? UserCog;
-                    const active = roleId === role.id;
-                    return (
-                      <button
-                        type="button"
-                        key={role.id}
-                        onClick={() => setRoleId(role.id)}
-                        className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 text-left text-xs font-medium transition-colors ${
-                          active
-                            ? "border-orange-400 bg-orange-50 text-orange-700"
-                            : "border-line text-ink-soft hover:border-line-strong hover:text-ink"
-                        }`}
-                      >
-                        <RoleIcon className={`h-4 w-4 shrink-0 ${active ? "text-orange-500" : "text-ink-faint"}`} strokeWidth={2} />
-                        {role.label}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-
               <button
                 type="submit"
                 disabled={scanning || (touched.email && touched.password && !isValid)}
@@ -319,15 +306,21 @@ export default function Login() {
                   </>
                 ) : (
                   <>
-                    Enter console
+                  Login
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}
               </button>
             </form>
 
-            <p className="mt-6 text-center text-xs text-ink-faint">
-              Protected by role-based access control · SOC2-style session policy (demo)
+            <p className="mt-6 text-center text-sm text-ink-soft">
+              Don't have an account?{" "}
+              <Link to="/register" className="font-semibold text-orange-600 hover:text-orange-700">
+                Create one
+              </Link>
+            </p>
+            <p className="mt-3 text-center text-xs text-ink-faint">
+             
             </p>
           </div>
         </div>

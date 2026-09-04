@@ -4,17 +4,35 @@ import Topbar from "../components/Topbar";
 import Card, { CardHeader } from "../components/Card";
 import SeverityBadge from "../components/SeverityBadge";
 import { staticAnalysisExample } from "../data/mockData";
+import { useScans } from "../context/ScanContext";
+import { useAuth } from "../context/AuthContext";
 
 export default function FileAnalysis() {
   const [status, setStatus] = useState("idle"); // idle | scanning | done
   const [fileName, setFileName] = useState(null);
+  const [scanRecord, setScanRecord] = useState(null);
   const [dragging, setDragging] = useState(false);
   const inputRef = useRef(null);
+  const { addScan } = useScans();
+  const { user } = useAuth();
+
+  const result = staticAnalysisExample;
 
   function runScan(name) {
     setFileName(name);
+    setScanRecord(null);
     setStatus("scanning");
-    setTimeout(() => setStatus("done"), 1800);
+    setTimeout(() => {
+      const record = addScan({
+        file: name,
+        hash: result.sha256,
+        risk: result.riskScore,
+        verdict: result.classification,
+        analyst: user?.name ?? "Auto-scan",
+      });
+      setScanRecord(record);
+      setStatus("done");
+    }, 1800);
   }
 
   function onDrop(e) {
@@ -29,14 +47,13 @@ export default function FileAnalysis() {
     if (f) runScan(f.name);
   }
 
-  const result = staticAnalysisExample;
-
   function downloadReport() {
     const name = fileName ?? result.fileName;
     const lines = [
       "THREATLENS AI — STATIC ANALYSIS REPORT",
       "=".repeat(42),
-      `Generated: ${new Date().toLocaleString()}`,
+      `Scan ID:     ${scanRecord?.id ?? "—"}`,
+      `Generated:   ${new Date().toLocaleString()}`,
       "",
       `File name:   ${name}`,
       `File type:   ${result.fileType}`,
@@ -142,6 +159,13 @@ export default function FileAnalysis() {
 
             {status === "done" && (
               <div className="p-5 space-y-5">
+                <div className="flex items-center justify-between rounded-lg bg-surface px-3.5 py-2.5">
+                  <p className="font-mono text-xs text-ink-soft">
+                    Saved as <span className="font-semibold text-ink">{scanRecord?.id}</span> in Scan History
+                  </p>
+                  <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                </div>
+
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <InfoRow label="File name" value={fileName ?? result.fileName} mono />
                   <InfoRow label="File type" value={result.fileType} />
