@@ -94,6 +94,27 @@ export const recentScans = [
   { id: "SCN-8835", file: "readme.pdf", hash: "6b86b273...7c92", risk: 8, verdict: "Clean", status: "low", time: "3 hr ago", analyst: "Auto-scan" },
 ];
 
+export const scanHistory = [
+  { id: "SCN-8841", file: "invoice.exe", hash: "e3b0c44298fc1c14...b7852b85", risk: 82, verdict: "Trojan", status: "critical", date: "Aug 31, 2026", time: "14:52", analyst: "S. Rangan" },
+  { id: "SCN-8840", file: "quarterly_report.docm", hash: "9f86d081884c7d65...219b2e2f", risk: 64, verdict: "Macro dropper", status: "high", date: "Aug 31, 2026", time: "14:38", analyst: "A. Fernandes" },
+  { id: "SCN-8839", file: "setup_v2.msi", hash: "a94a8fe5ccb19ba6...025b6100", risk: 22, verdict: "Clean", status: "low", date: "Aug 31, 2026", time: "14:14", analyst: "Auto-scan" },
+  { id: "SCN-8838", file: "update_patch.zip", hash: "2cf24dba5fb0a30e...b7395a4b", risk: 47, verdict: "Suspicious archive", status: "medium", date: "Aug 31, 2026", time: "14:01", analyst: "Auto-scan" },
+  { id: "SCN-8837", file: "vpn_client.dll", hash: "d4735e3a265e16ee...c0c5cad3", risk: 91, verdict: "Ransomware.GenKD", status: "critical", date: "Aug 31, 2026", time: "13:47", analyst: "R. Ibarra" },
+  { id: "SCN-8836", file: "photo_editor.apk", hash: "4e07408562bedb8b...5c7f4a3b", risk: 58, verdict: "Adware bundle", status: "medium", date: "Aug 31, 2026", time: "12:20", analyst: "Auto-scan" },
+  { id: "SCN-8835", file: "readme.pdf", hash: "6b86b273ff34fce1...7ab409cd", risk: 8, verdict: "Clean", status: "low", date: "Aug 31, 2026", time: "11:05", analyst: "Auto-scan" },
+  { id: "SCN-8834", file: "payroll_march.xlsm", hash: "1c383cd30b7c298a...cc6da43e", risk: 71, verdict: "Macro dropper", status: "high", date: "Aug 30, 2026", time: "17:42", analyst: "A. Fernandes" },
+  { id: "SCN-8833", file: "driver_pack.exe", hash: "5891b5b522d5df08...f8c33c34", risk: 15, verdict: "Clean", status: "low", date: "Aug 30, 2026", time: "16:10", analyst: "Auto-scan" },
+  { id: "SCN-8832", file: "remote_support.msi", hash: "f5ca38f748a1d6ea...b9e5b3f4", risk: 54, verdict: "PUP / bundler", status: "medium", date: "Aug 30, 2026", time: "15:33", analyst: "Auto-scan" },
+  { id: "SCN-8831", file: "invoice_scan.img", hash: "ef2d127de37b942b...c26c1907", risk: 88, verdict: "Trojan.GenKit", status: "critical", date: "Aug 30, 2026", time: "13:52", analyst: "R. Ibarra" },
+  { id: "SCN-8830", file: "wallpaper_pack.zip", hash: "e5fa44f2b31c1fb5...5c5cf03c", risk: 12, verdict: "Clean", status: "low", date: "Aug 30, 2026", time: "11:18", analyst: "Auto-scan" },
+  { id: "SCN-8829", file: "team_notes.docx", hash: "3596ba00191893b2...b1f8ee94", risk: 6, verdict: "Clean", status: "low", date: "Aug 29, 2026", time: "18:04", analyst: "Auto-scan" },
+  { id: "SCN-8828", file: "cracked_license.exe", hash: "7902699be42c8a8e...a0b8b9c6", risk: 95, verdict: "Ransomware.GenKD", status: "critical", date: "Aug 29, 2026", time: "16:47", analyst: "S. Rangan" },
+  { id: "SCN-8827", file: "browser_ext.crx", hash: "2c624232cdd221771...7b16bee1", risk: 62, verdict: "Adware bundle", status: "medium", date: "Aug 29, 2026", time: "15:12", analyst: "Auto-scan" },
+  { id: "SCN-8826", file: "firmware_update.bin", hash: "19581e27de7ced00...3c40098c", risk: 33, verdict: "Suspicious archive", status: "medium", date: "Aug 29, 2026", time: "12:39", analyst: "M. Chen" },
+  { id: "SCN-8825", file: "onboarding_guide.pdf", hash: "0263829989b6fd95...0b8ba1cd", risk: 4, verdict: "Clean", status: "low", date: "Aug 28, 2026", time: "17:20", analyst: "Auto-scan" },
+  { id: "SCN-8824", file: "vendor_invoice.exe", hash: "07523dd9d4a2ceec...b0f9e5d1", risk: 79, verdict: "Trojan", status: "high", date: "Aug 28, 2026", time: "14:55", analyst: "A. Fernandes" },
+];
+
 export const staticAnalysisExample = {
   fileName: "invoice.exe",
   sha256: "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b85",

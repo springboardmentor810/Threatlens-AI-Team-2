@@ -5,8 +5,9 @@ import Topbar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import Card, { CardHeader } from "../components/Card";
 import SeverityBadge from "../components/SeverityBadge";
-import { statOverview, detectionTrend, riskDistribution, recentScans } from "../data/mockData";
+import { statOverview, detectionTrend, riskDistribution } from "../data/mockData";
 import { useAuth } from "../context/AuthContext";
+import { useScans } from "../context/ScanContext";
 
 function ChartTooltip({ active, payload, label }) {
   if (!active || !payload?.length) return null;
@@ -24,10 +25,12 @@ function ChartTooltip({ active, payload, label }) {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { scans } = useScans();
+  const recentScans = scans.slice(0, 7);
 
   return (
     <div>
-      <Topbar title="Overview" subtitle={`Welcome back, ${user?.name?.split(" ")[0] ?? "analyst"}. Here's the state of the fleet.`} />
+      <Topbar title="Dashboard" subtitle={`Welcome back, ${user?.name?.split(" ")[0] ?? "analyst"}. Here's the state of the fleet.`} />
 
       <div className="space-y-6 px-8 py-6">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -103,7 +106,7 @@ export default function Dashboard() {
                     <td className="px-5 py-3.5 font-mono text-xs text-ink">{s.risk}/100</td>
                     <td className="px-5 py-3.5"><SeverityBadge severity={s.status} /></td>
                     <td className="px-5 py-3.5 text-ink-soft">{s.analyst}</td>
-                    <td className="px-5 py-3.5 text-ink-faint">{s.time}</td>
+                    <td className="px-5 py-3.5 text-ink-faint">{s.date}, {s.time}</td>
                   </tr>
                 ))}
               </tbody>

@@ -10,11 +10,13 @@ import {
   Users,
   ShieldCheck,
   Settings as SettingsIcon,
+  History,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 
 const NAV = [
-  { to: "/app", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/app", label: "Dashboard", icon: LayoutDashboard, end: true },
+  { to: "/app/scan-history", label: "Scan History", icon: History },
   { to: "/app/file-analysis", label: "File Analysis", icon: UploadCloud },
   { to: "/app/classification", label: "Classification", icon: ShieldHalf },
   { to: "/app/threat-monitoring", label: "Threat Monitoring", icon: Radar },
