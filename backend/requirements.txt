@@ -40,4 +40,4 @@ lief
 yara-python
 vt-py
 pypdf
-
+python-docx
