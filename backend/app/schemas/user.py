@@ -181,3 +181,29 @@ class UserResponse(UserBase):
     model_config = ConfigDict(
         from_attributes=True
     )
+
+class AdminRoleUpdate(BaseModel):
+    """Schema for administrators changing a user's authorization role."""
+
+    role: str = Field(
+        ...,
+        description="New authorization role: analyst, security_analyst, or admin"
+    )
+
+    @field_validator("role")
+    @classmethod
+    def validate_role(cls, value: str) -> str:
+        value = value.strip().lower()
+
+        allowed_roles = {
+            "analyst",
+            "security_analyst",
+            "admin",
+        }
+
+        if value not in allowed_roles:
+            raise ValueError(
+                "Role must be one of: analyst, security_analyst, admin."
+            )
+
+        return value
