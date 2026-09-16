@@ -38,3 +38,4 @@ numpy
 pandas
 lief
 yara-python
+vt-py
