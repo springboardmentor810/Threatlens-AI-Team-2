@@ -8,7 +8,7 @@ BASE_DIR = Path(__file__).resolve().parents[3]
 
 class Settings(BaseSettings):
     DATABASE_URL: str
-    MONGODB_URL: str
+    MONGODB_URL: str = ""
     SECRET_KEY: str
     ALGORITHM: str = "HS256"
     VIRUSTOTAL_API_KEY: str = ""
