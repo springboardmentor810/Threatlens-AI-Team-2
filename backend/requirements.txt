@@ -39,3 +39,5 @@ pandas
 lief
 yara-python
 vt-py
+pypdf
+
