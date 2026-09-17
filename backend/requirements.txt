@@ -32,3 +32,13 @@ typing-inspection==0.4.2
 typing_extensions==4.16.0
 uvicorn==0.52.0
 email-validator==2.2.0
+joblib==1.5.2
+scikit-learn==1.9.0
+numpy
+pandas
+lief
+yara-python
+vt-py
+pypdf
+python-docx
+pefile

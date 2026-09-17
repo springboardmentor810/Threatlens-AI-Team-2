@@ -8,6 +8,7 @@ from cybersecurity.hashing.signature_detector import SignatureDetector
 
 from app.models.analysis import Analysis
 from app.services.virustotal_service import VirusTotalService
+from app.services.prediction_service import PredictionService
 
 from cybersecurity.file_analysis.file_validator import validate_file
 from cybersecurity.file_analysis.metadata import extract_metadata
@@ -33,7 +34,7 @@ class CybersecurityService:
     """
     Complete cybersecurity analysis service.
 
-    Current pipeline:
+    Pipeline:
 
         File
           |
@@ -47,20 +48,20 @@ class CybersecurityService:
           |
           +-- VirusTotal
           |
-          +-- Rule-Based Fallback
+          +-- ML Malware Classification
+          |
+          +-- Rule-Based Supporting Evidence
           |
           +-- Final Finding
           |
           +-- Database / Alert
-
-    ML integration is intentionally left as a placeholder until
-    Abhishek's ML model and feature specification are complete.
     """
 
     def __init__(self):
         self.yara_scanner = YaraScanner()
         self.signature_detector = SignatureDetector()
         self.virustotal_service = VirusTotalService()
+        self.prediction_service = PredictionService()
 
     # ==============================================================
     # COMPLETE FILE ANALYSIS
@@ -197,13 +198,8 @@ class CybersecurityService:
         )
 
         # ==========================================================
-        # TEMPORARY RULE-BASED FALLBACK
+        # RULE-BASED SUPPORTING EVIDENCE
         # ==========================================================
-
-        # This is NOT the final ML model.
-        #
-        # It exists only so that the backend can produce a complete
-        # result while the ML module is still being developed.
 
         rule_based_finding = self._generate_rule_based_finding(
             yara_result=yara_result,
@@ -215,14 +211,52 @@ class CybersecurityService:
         # ML ANALYSIS
         # ==========================================================
 
-        # Abhishek's ML model is not integrated yet.
-        #
-        # Do NOT calculate another ML score here.
-        #
-        # When the ML model is ready, this variable will contain
-        # the prediction returned by MLService.
+        try:
 
-        ml_analysis = None
+            ml_prediction = self.prediction_service.predict_file(
+                file_path
+            )
+
+            ml_analysis = {
+                "prediction": ml_prediction["prediction"],
+
+                "malware_probability": ml_prediction[
+                    "malware_probability"
+                ],
+
+                "risk_level": ml_prediction[
+                    "risk_level"
+                ],
+
+                "malware_family": ml_prediction[
+                    "malware_family"
+                ],
+
+                "family_probability": ml_prediction[
+                    "family_probability"
+                ]
+            }
+
+        except Exception as exc:
+
+            # ML failure must not destroy the cybersecurity analysis.
+            #
+            # YARA, signature detection and VirusTotal remain
+            # available as fallback evidence.
+
+            ml_analysis = {
+                "prediction": None,
+
+                "malware_probability": None,
+
+                "risk_level": None,
+
+                "malware_family": None,
+
+                "family_probability": None,
+
+                "error": str(exc)
+            }
 
         # ==========================================================
         # FINAL FINDING
@@ -275,13 +309,13 @@ class CybersecurityService:
 
             "suspicious_analysis": security_features,
 
-            # Temporary fallback result.
+            # Rule-based cybersecurity evidence.
             "rule_based_finding": rule_based_finding,
 
-            # None until Abhishek's ML model is integrated.
+            # ML classification result.
             "ml_analysis": ml_analysis,
 
-            # This is the finding used by the API and AlertService.
+            # Final result used by API and AlertService.
             "final_finding": final_finding
         }
 
@@ -297,56 +331,159 @@ class CybersecurityService:
         """
         Generate the final cybersecurity finding.
 
-        CURRENT:
-            ML unavailable -> use rule-based fallback.
+        ML provides the primary classification when available.
 
-        FUTURE:
-            ML available -> use/combine ML prediction with
-            supporting security evidence.
+        YARA, signature detection and VirusTotal remain supporting
+        cybersecurity evidence.
+
+        If ML is unavailable, the rule-based result is used.
         """
 
-        # ----------------------------------------------------------
-        # ML AVAILABLE
-        # ----------------------------------------------------------
+        # ==========================================================
+        # ML AVAILABLE AND SUCCESSFUL
+        # ==========================================================
 
-        if ml_analysis:
+        if (
+            ml_analysis
+            and ml_analysis.get("prediction") is not None
+            and ml_analysis.get("malware_probability") is not None
+        ):
+
+            prediction = ml_analysis[
+                "prediction"
+            ]
+
+            malware_probability = float(
+                ml_analysis[
+                    "malware_probability"
+                ]
+            )
+
+            risk_level = ml_analysis.get(
+                "risk_level",
+                "Low"
+            )
+
+            # ------------------------------------------------------
+            # MAP ML OUTPUT TO EXISTING API TERMINOLOGY
+            # ------------------------------------------------------
+
+            if prediction == "Malware":
+
+                verdict = "MALICIOUS"
+
+            else:
+
+                verdict = "CLEAN"
+
+            threat_level = str(
+                risk_level
+            ).upper()
+
+            # Convert probability from 0-1 to 0-100.
+            risk_score = round(
+                malware_probability * 100
+            )
+
+            # ------------------------------------------------------
+            # REASONS
+            # ------------------------------------------------------
+
+            reasons = []
+
+            reasons.append(
+                "ML classification: "
+                f"{prediction}"
+            )
+
+            reasons.append(
+                "ML malware probability: "
+                f"{malware_probability:.2%}"
+            )
+
+            malware_family = ml_analysis.get(
+                "malware_family"
+            )
+
+            family_probability = ml_analysis.get(
+                "family_probability"
+            )
+
+            if malware_family:
+
+                reason = (
+                    "Predicted malware family: "
+                    f"{malware_family}"
+                )
+
+                if family_probability is not None:
+
+                    reason += (
+                        " "
+                        f"({float(family_probability):.2%} confidence)"
+                    )
+
+                reasons.append(
+                    reason
+                )
+
+            # ------------------------------------------------------
+            # ADD SUPPORTING CYBERSECURITY EVIDENCE
+            # ------------------------------------------------------
+
+            reasons.extend(
+                rule_based_finding.get(
+                    "reasons",
+                    []
+                )
+            )
 
             return {
-                "verdict": ml_analysis.get(
-                    "verdict",
-                    rule_based_finding["verdict"]
-                ),
+                "verdict": verdict,
 
-                "threat_level": ml_analysis.get(
-                    "threat_level",
-                    rule_based_finding["threat_level"]
-                ),
+                "threat_level": threat_level,
 
-                "risk_score": ml_analysis.get(
-                    "risk_score",
-                    rule_based_finding["rule_based_risk_score"]
-                ),
+                "risk_score": risk_score,
 
-                "reasons": ml_analysis.get(
-                    "reasons",
-                    rule_based_finding["reasons"]
-                )
+                "reasons": reasons,
+
+                "ml_prediction": prediction,
+
+                "malware_probability": malware_probability,
+
+                "malware_family": malware_family,
+
+                "family_probability": family_probability
             }
 
-        # ----------------------------------------------------------
-        # ML NOT AVAILABLE
-        # ----------------------------------------------------------
+        # ==========================================================
+        # ML FAILED / UNAVAILABLE
+        # ==========================================================
 
         return {
-            "verdict": rule_based_finding["verdict"],
+            "verdict": rule_based_finding[
+                "verdict"
+            ],
 
-            "threat_level": rule_based_finding["threat_level"],
+            "threat_level": rule_based_finding[
+                "threat_level"
+            ],
 
             "risk_score": rule_based_finding[
                 "rule_based_risk_score"
             ],
 
-            "reasons": rule_based_finding["reasons"]
+            "reasons": rule_based_finding[
+                "reasons"
+            ],
+
+            "ml_prediction": None,
+
+            "malware_probability": None,
+
+            "malware_family": None,
+
+            "family_probability": None
         }
 
     # ==============================================================
@@ -374,16 +511,20 @@ class CybersecurityService:
             )
         )
 
-        db.add(analysis_record)
+        db.add(
+            analysis_record
+        )
 
         db.commit()
 
-        db.refresh(analysis_record)
+        db.refresh(
+            analysis_record
+        )
 
         return analysis_record
 
     # ==============================================================
-    # TEMPORARY RULE-BASED DETECTION
+    # RULE-BASED DETECTION
     # ==============================================================
 
     def _generate_rule_based_finding(
@@ -393,11 +534,12 @@ class CybersecurityService:
         virustotal_result: dict[str, Any]
     ) -> dict[str, Any]:
         """
-        Temporary rule-based fallback.
+        Rule-based cybersecurity evidence.
 
         This is NOT the ML prediction.
 
-        It is used only until the ML model is integrated.
+        It is retained as supporting evidence and as the fallback
+        when ML is unavailable.
         """
 
         # ==========================================================
@@ -425,21 +567,25 @@ class CybersecurityService:
         )
 
         # ==========================================================
-        # TEMPORARY RULE-BASED SCORE
+        # RULE-BASED SCORE
         # ==========================================================
 
         risk_score = 0
 
         if signature_detected:
+
             risk_score += 60
 
         if yara_detected:
+
             risk_score += 25
 
         if vt_malicious > 0:
+
             risk_score += 10
 
         if vt_suspicious > 0:
+
             risk_score += 5
 
         risk_score = min(
@@ -551,7 +697,7 @@ class CybersecurityService:
 
         # ==========================================================
         # VERDICT
-        # ==========================================================
+        # ==============================================================
 
         if risk_score >= 50:
 
@@ -591,8 +737,6 @@ class CybersecurityService:
 
             "threat_level": threat_level,
 
-            # Explicitly named as rule-based because ML will
-            # eventually provide the primary risk score.
             "rule_based_risk_score": risk_score,
 
             "reasons": reasons,
