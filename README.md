@@ -55,7 +55,6 @@ Program: Infosys Springboard Virtual Internship 7.0  •  Domain: AI
 * [Database](#-database)
 * [API](#-api)
 * [Local Setup](#-local-setup)
-* [Environment Variables](#-environment-variables)
 * [Production Deployment](#-production-deployment)
 * [Monitoring](#-monitoring)
 * [Security Notes](#-security-notes)
