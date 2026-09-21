@@ -8,10 +8,10 @@ The platform provides security analysts with a centralized dashboard where files
 
 ---
 ## TEAM 2 : 
-Dimple Sachanandani | Prasanna.G | Nalam Beema Satya Sai | Abhishek Swami | K.Shiva Kumar Reddy | Gangappagari Kuruva Ajay | ShriPavani
+## Dimple Sachanandani | Prasanna.G | Nalam Beema Satya Sai | Abhishek Swami | K.Shiva Kumar Reddy | Gangappagari Kuruva Ajay | ShriPavani
 
-# Springboard Mentor: Anusha Maam
-# Program: Infosys Springboard Virtual Internship 7.0  •  Domain: AI
+## Springboard Mentor: Anusha Maam
+## Program: Infosys Springboard Virtual Internship 7.0  •  Domain: AI
 
 ---
 
